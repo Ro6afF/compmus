@@ -1,0 +1,6 @@
+[package]
+name = "compmus"
+version = "0.1.0"
+authors = ["Ro6afF <dimo_chanev@windowslive.com>"]
+
+[dependencies]
