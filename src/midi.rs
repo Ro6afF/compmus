@@ -211,15 +211,16 @@ impl MidiEvent {
         }
     }
 
-    pub fn to_byte_vec(&self) -> Vec<u8> {
+    pub fn to_byte_vec(&self) -> (u32, Vec<u8>) {
         let mut res = var_len_enc(self.delta_time);
         res.push(self.message_type + self.channel);
         res.push(self.data1);
         if !(self.message_type == 0b11000000 || self.delta_time == 0b11010000) {
             res.push(self.data2);
+            (3, res)
+        } else {
+            (2, res)
         }
-
-        res
     }
 }
 
@@ -287,7 +288,6 @@ impl fmt::Display for SysEvent {
                 0b11111010 => format!("START"),
                 0b11111011 => format!("CONTINUE"),
                 0b11111100 => format!("STOP"),
-                0b11111111 => format!("RESET"),
                 0b11110010 => format!("SONG POSITION POINTER {:?}", self.bytes),
                 0b11110011 => format!("SONG SELECT {:?}", self.bytes),
                 0b11110110 => format!("TUNE REQUEST"),
@@ -409,6 +409,11 @@ impl fmt::Display for MetaEvent {
                     format!("{} SHARP(S)", self.bytes[0])
                 },
                 if self.bytes[1] == 0 { "MAJOR" } else { "MINOR" }
+            ),
+            0x58 => write!(
+                f,
+                "DELTA TIME {} FOR TIME SIGNATIRE META EVENT AND DATA {:?}",
+                self.delta_time, self.bytes
             ),
             _ => panic!(),
         }
@@ -589,8 +594,7 @@ impl MidiFile {
                         )));
                         current_byte += 3;
                         remaining_bytes -= 3;
-                    } else if buff[current_byte] == 0b11111111
-                        || buff[current_byte] == 0b11111110
+                    } else if buff[current_byte] == 0b11111110
                         || buff[current_byte] == 0b11111100
                         || buff[current_byte] == 0b11111011
                         || buff[current_byte] == 0b11111010
@@ -603,6 +607,7 @@ impl MidiFile {
                             vec![],
                         )));
                         current_byte += 1;
+                        remaining_bytes -= 1;
                     } else if buff[current_byte] == 0b11110011 {
                         events.push(Event::Sys(SysEvent::new(
                             delta_time,
@@ -610,6 +615,7 @@ impl MidiFile {
                             vec![buff[current_byte + 1]],
                         )));
                         current_byte += 2;
+                        remaining_bytes -= 2;
                     } else if buff[current_byte] == 0b11110010 {
                         events.push(Event::Sys(SysEvent::new(
                             delta_time,
@@ -617,6 +623,33 @@ impl MidiFile {
                             vec![buff[current_byte + 1], buff[current_byte + 2]],
                         )));
                         current_byte += 3;
+                        remaining_bytes -= 3;
+                    } else if buff[current_byte] == 0xff {
+                        current_byte += 1;
+                        remaining_bytes -= 1;
+                        let event_type = buff[current_byte];
+                        current_byte += 1;
+                        remaining_bytes -= 1;
+                        let mut length: u64 = 0;
+                        while {
+                            length = (length << 7) + buff[current_byte] as u64 & 0x7f;
+                            remaining_bytes -= 1;
+                            buff[{
+                                     current_byte += 1;
+                                     current_byte - 1
+                                 }] & 0x80 != 0
+                        } {}
+                        events.push(Event::Meta(MetaEvent::new(
+                            delta_time,
+                            event_type,
+                            length,
+                            buff[current_byte..(current_byte + length as usize)]
+                                .iter()
+                                .map(|x| *x)
+                                .collect::<Vec<u8>>(),
+                        )));
+                        current_byte += length as usize;
+                        remaining_bytes -= length as u32;
                     } else {
                         println!("UNDEFINED EVENT");
                     }
@@ -624,13 +657,26 @@ impl MidiFile {
                 chunks.push(Chunk::Track(TrackChunk { events: events }));
             } else {
                 println!("Alien chunk");
-                unimplemented!();
             }
         }
 
         MidiFile {
             file_name: file_name,
             chunks: chunks,
+        }
+    }
+
+    pub fn write_file(&self) {
+        let mut file = File::create(&self.file_name).expect("Can't open file");
+        match &self.chunks[0] {
+            Chunk::Header(x) => file.write_all(&[0x4d as u8, 0x54 as u8, 0x68 as u8, 0x64 as u8, 0, 0, 0, 6 as u8, 0, x.file_type as u8, (x.ntrks >> 8) as u8, (x.ntrks & 0b11111111) as u8, (x.division >> 8) as u8, (x.division & 0b11111111) as u8]),
+            _ => panic!("CHUNK 0 IS NOT A HEADER")
+        };
+        for i in self.chunks[1..].iter() {
+            match i {
+                Chunk::Track(x) => unimplemented!(),
+                _ => panic!("CHUNK THAT IS NOT 0 IS A HEADER")
+            }
         }
     }
 }
