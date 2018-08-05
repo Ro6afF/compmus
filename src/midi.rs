@@ -3,6 +3,51 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+const EVENT_TYPE_NOTE_OFF: u8 = 0x80;
+const EVENT_TYPE_NOTE_ON: u8 = 0x90;
+const EVENT_TYPE_POLY_AFTER: u8 = 0xa0;
+const EVENT_TYPE_CONTROLLER: u8 = 0xb0;
+const EVENT_TYPE_PROGRAM: u8 = 0xc0;
+const EVENT_TYPE_AFTER_TOUCH: u8 = 0xd0;
+const EVENT_TYPE_PITCH_BEND: u8 = 0xe0;
+const EVENT_TYPE_SYSEX: u8 = 0xf0;
+const EVENT_TYPE_META: u8 = 0xff;
+const EVENT_TYPE_SONG_POS: u8 = 0xf2;
+const EVENT_TYPE_ENDSYSEX: u8 = 0xf7;
+const EVENT_TYPE_CLOCK: u8 = 0xf8;
+const EVENT_TYPE_START: u8 = 0xfA;
+const EVENT_TYPE_CONTINUE: u8 = 0xfb;
+const EVENT_TYPE_STOP: u8 = 0xfc;
+const EVENT_TYPE_SENSE: u8 = 0xfe;
+const EVENT_TYPE_NOTE: u8 = 0x1;
+const EVENT_TYPE_CHORD: u8 = 0x2;
+const EVENT_TYPE_TICK1: u8 = 0x3;
+const EVENT_TYPE_TICK2: u8 = 0x4;
+
+const META_SEQUENCE_NUMBER: u8 = 0;
+const META_TEXT: u8 = 1;
+const META_COPYRIGHT: u8 = 2;
+const META_TRACK_NAME: u8 = 3;
+const META_INSTRUMENT_NAME: u8 = 4;
+const META_LYRIC: u8 = 5;
+const META_MARKER: u8 = 6;
+const META_CUE_POINT: u8 = 7;
+const META_PROGRAM_NAME: u8 = 8;
+const META_DEVICE_NAME: u8 = 9;
+const META_TRACK_COMMENT: u8 = 0xf;
+const META_TITLE: u8 = 0x10;
+const META_SUBTITLE: u8 = 0x11;
+const META_COMPOSER: u8 = 0x12;
+const META_TRANSLATOR: u8 = 0x13;
+const META_POET: u8 = 0x14;
+const META_PORT_CHANGE: u8 = 0x21;
+const META_CHANNEL_PREFIX: u8 = 0x22;
+const META_END_OF_TRACK: u8 = 0x2f;
+const META_TEMPO: u8 = 0x51;
+const META_TIME_SIGNATURE: u8 = 0x58;
+const META_KEY_SIGNATURE: u8 = 0x59;
+const META_SPECIFIC: u8 = 0x7F;
+
 const NOTES: [&'static str; 128] = [
     "C - 0", "C# - 0", "D - 0", "D# - 0", "E - 0", "F - 0", "F# - 0", "G - 0", "G# - 0", "A - 0",
     "A# - 0", "B - 0", "C - 1", "C# - 1", "D - 1", "D# - 1", "E - 1", "F - 1", "F# - 1", "G - 1",
@@ -262,39 +307,26 @@ impl fmt::Display for MidiEvent {
     }
 }
 
-pub struct SysEvent {
+pub struct SysEXEvent {
     delta_time: u32,
-    message: u8,
     bytes: Vec<u8>,
 }
 
-impl SysEvent {
-    pub fn new(delta_time: u32, message: u8, bytes: Vec<u8>) -> SysEvent {
-        SysEvent {
+impl SysEXEvent {
+    pub fn new(delta_time: u32, bytes: Vec<u8>) -> SysEXEvent {
+        SysEXEvent {
             delta_time: delta_time,
-            message: message,
             bytes: bytes,
         }
     }
 }
 
-impl fmt::Display for SysEvent {
+impl fmt::Display for SysEXEvent {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "DELTA TIME {} FOR {} EVENT",
-            self.delta_time,
-            match self.message {
-                0b11111010 => format!("START"),
-                0b11111011 => format!("CONTINUE"),
-                0b11111100 => format!("STOP"),
-                0b11110010 => format!("SONG POSITION POINTER {:?}", self.bytes),
-                0b11110011 => format!("SONG SELECT {:?}", self.bytes),
-                0b11110110 => format!("TUNE REQUEST"),
-                0b11111000 => format!("TIMING CLOCK"),
-                0b11111110 => format!("ACTIVE SENSING"),
-                _ => panic!("UNKNOWN EVENT"),
-            }
+            "Delta time {} for SysEX event with data: {:?}",
+            self.delta_time, self.bytes
         )
     }
 }
@@ -302,12 +334,12 @@ impl fmt::Display for SysEvent {
 pub struct MetaEvent {
     delta_time: u32,
     message_type: u8,
-    length: u64,
+    length: u32,
     bytes: Vec<u8>,
 }
 
 impl MetaEvent {
-    pub fn new(delta_time: u32, message_type: u8, length: u64, bytes: Vec<u8>) -> MetaEvent {
+    pub fn new(delta_time: u32, message_type: u8, length: u32, bytes: Vec<u8>) -> MetaEvent {
         MetaEvent {
             delta_time: delta_time,
             message_type: message_type,
@@ -423,7 +455,7 @@ impl fmt::Display for MetaEvent {
 pub enum Event {
     Midi(MidiEvent),
     Meta(MetaEvent),
-    Sys(SysEvent),
+    SysEX(SysEXEvent),
 }
 
 impl fmt::Display for Event {
@@ -431,7 +463,7 @@ impl fmt::Display for Event {
         match self {
             Event::Midi(x) => x.fmt(f),
             Event::Meta(x) => x.fmt(f),
-            Event::Sys(x) => x.fmt(f),
+            Event::SysEX(x) => x.fmt(f),
         }
     }
 }
@@ -520,162 +552,208 @@ impl MidiFile {
         let mut file = File::open(&file_name).expect("Can't open file");
         let mut buff = vec![];
         file.read_to_end(&mut buff).expect("Can't read file");
-
-        let mut chunks = vec![];
-
         let mut current_byte = 0;
-        while current_byte < buff.len() {
-            let chunk_type = buff[current_byte..({
+        let mut chunk_type = buff[current_byte..({
                                       current_byte += 4;
                                       current_byte
                                   })].iter()
+            .map(|x| *x as char)
+            .collect::<String>();
+        let mut chunk_length: u32 = 0;
+        let mut pow: u32 = 256 * 256 * 256;
+        for i in buff[current_byte..({
+                          current_byte += 4;
+                          current_byte
+                      })].iter()
+        {
+            chunk_length += *i as u32 * pow;
+            pow /= 256;
+        }
+
+        if chunk_type != "MThd" || chunk_length != 6 {
+            panic!("Bad file. MThd expected");
+        }
+
+        let file_type = buff[current_byte] * 256 + buff[current_byte + 1];
+        current_byte += 2;
+        let ntrks = buff[current_byte] * 256 + buff[current_byte + 1];
+        current_byte += 2;
+        let division = buff[current_byte] * 256 + buff[current_byte + 1];
+        current_byte += 2;
+
+        if file_type != 0 && file_type != 1 {
+            unimplemented!();
+        }
+
+        for _ in 0..ntrks {
+            chunk_type = buff[current_byte..({
+                                  current_byte += 4;
+                                  current_byte
+                              })].iter()
                 .map(|x| *x as char)
                 .collect::<String>();
-            let mut chunk_length: u32 = 0;
-            let mut pow: u32 = 128 * 128 * 128;
+            chunk_length = 0;
+            pow = 256 * 256 * 256;
             for i in buff[current_byte..({
                               current_byte += 4;
                               current_byte
                           })].iter()
             {
                 chunk_length += *i as u32 * pow;
-                pow /= 128;
+                pow /= 256;
             }
-            if chunk_type == "MThd" {
-                let format: u16;
-                let ntrks: u16;
-                let division: u16;
-                current_byte += 1;
-                format = buff[current_byte] as u16;
-                current_byte += 1;
+            if chunk_type != "MTrk" {
+                panic!("Bad file. MTrk expected")
+            }
+            let last_byte = current_byte + chunk_length as usize;
+            let mut status: u8 = 0;
+            let mut sstatus: u8 = 0;
+            let mut click = 0;
+            let mut events = vec![];
 
-                ntrks = buff[current_byte] as u16 * 128 + buff[current_byte + 1] as u16;
-                current_byte += 2;
-
-                division = buff[current_byte] as u16 * 128 + buff[current_byte + 1] as u16;
-                current_byte += 2;
-                chunks.push(Chunk::Header(HeaderChunk::new(format, ntrks, division)));
-            } else if chunk_type == "MTrk" {
-                let mut remaining_bytes = chunk_length;
-                let mut events = vec![];
-
-                while remaining_bytes > 0 {
-                    let mut delta_time: u32 = 0;
+            loop {
+                let mut delta_time: u32 = 0;
+                while {
+                    delta_time = (delta_time << 7) + buff[current_byte] as u32 & 0x7f;
+                    buff[{
+                             current_byte += 1;
+                             current_byte - 1
+                         }] & 0x80 != 0
+                } {}
+                let mut event_type;
+                while {
+                    event_type = buff[{
+                                          current_byte += 1;
+                                          current_byte - 1
+                                      }];
+                    event_type <= 0xf1 || event_type >= 0xfe || event_type == 0x7f
+                } {
+                    println!("Unknown message type {}", event_type);
+                }
+                if event_type == 0xf0 || event_type == 0xf7 {
+                    status = 0;
+                    let mut length: u32 = 0;
                     while {
-                        delta_time = (delta_time << 7) + buff[current_byte] as u32 & 0x7f;
-                        remaining_bytes -= 1;
+                        length = (length << 7) + buff[current_byte] as u32 & 0x7f;
                         buff[{
                                  current_byte += 1;
                                  current_byte - 1
                              }] & 0x80 != 0
                     } {}
-                    if buff[current_byte] >> 4 == 0b1100 || buff[current_byte] >> 4 == 0b1101 {
-                        events.push(Event::Midi(MidiEvent::new(
-                            delta_time,
-                            buff[current_byte] & 0b11110000,
-                            buff[current_byte] & 0b1111,
-                            buff[current_byte + 1],
-                            0,
-                        )));
-                        current_byte += 2;
-                        remaining_bytes -= 2;
-                    } else if buff[current_byte] >> 4 == 0b1000
-                        || buff[current_byte] >> 4 == 0b1001
-                        || buff[current_byte] >> 4 == 0b1010
-                        || buff[current_byte] >> 4 == 0b1011
-                        || buff[current_byte] >> 4 == 0b1110
-                    {
-                        events.push(Event::Midi(MidiEvent::new(
-                            delta_time,
-                            buff[current_byte] & 0b11110000,
-                            buff[current_byte] & 0b1111,
-                            buff[current_byte + 1],
-                            buff[current_byte + 2],
-                        )));
-                        current_byte += 3;
-                        remaining_bytes -= 3;
-                    } else if buff[current_byte] == 0b11111110
-                        || buff[current_byte] == 0b11111100
-                        || buff[current_byte] == 0b11111011
-                        || buff[current_byte] == 0b11111010
-                        || buff[current_byte] == 0b11111000
-                        || buff[current_byte] == 0b11110110
-                    {
-                        events.push(Event::Sys(SysEvent::new(
-                            delta_time,
-                            buff[current_byte],
-                            vec![],
-                        )));
-                        current_byte += 1;
-                        remaining_bytes -= 1;
-                    } else if buff[current_byte] == 0b11110011 {
-                        events.push(Event::Sys(SysEvent::new(
-                            delta_time,
-                            buff[current_byte],
-                            vec![buff[current_byte + 1]],
-                        )));
-                        current_byte += 2;
-                        remaining_bytes -= 2;
-                    } else if buff[current_byte] == 0b11110010 {
-                        events.push(Event::Sys(SysEvent::new(
-                            delta_time,
-                            buff[current_byte],
-                            vec![buff[current_byte + 1], buff[current_byte + 2]],
-                        )));
-                        current_byte += 3;
-                        remaining_bytes -= 3;
-                    } else if buff[current_byte] == 0xff {
-                        current_byte += 1;
-                        remaining_bytes -= 1;
-                        let event_type = buff[current_byte];
-                        current_byte += 1;
-                        remaining_bytes -= 1;
-                        let mut length: u64 = 0;
-                        while {
-                            length = (length << 7) + buff[current_byte] as u64 & 0x7f;
-                            remaining_bytes -= 1;
+                    let mut data = vec![];
+                    for i in 0..length {
+                        data.push(
                             buff[{
                                      current_byte += 1;
                                      current_byte - 1
-                                 }] & 0x80 != 0
-                        } {}
-                        events.push(Event::Meta(MetaEvent::new(
-                            delta_time,
-                            event_type,
-                            length,
-                            buff[current_byte..(current_byte + length as usize)]
-                                .iter()
-                                .map(|x| *x)
-                                .collect::<Vec<u8>>(),
-                        )));
-                        current_byte += length as usize;
-                        remaining_bytes -= length as u32;
-                    } else {
-                        println!("UNDEFINED EVENT");
+                                 }],
+                        );
                     }
+                    if data[length as usize - 1] != 0x7f {
+                        println!("SYSEX event doesn't end with 0x7f");
+                    }
+                    events.push(Event::SysEX(SysEXEvent::new(delta_time, data)))
+                } else if event_type == 0xff {
+                    status = 0;
+                    let meta_type = buff[{
+                                             current_byte += 1;
+                                             current_byte - 1
+                                         }];
+                    let mut length: u32 = 0;
+                    while {
+                        length = (length << 7) + buff[current_byte] as u32 & 0x7f;
+                        buff[{
+                                 current_byte += 1;
+                                 current_byte - 1
+                             }] & 0x80 != 0
+                    } {}
+                    let mut data = vec![];
+                    for i in 0..length {
+                        data.push(
+                            buff[{
+                                     current_byte += 1;
+                                     current_byte - 1
+                                 }],
+                        );
+                    }
+                    events.push(Event::Meta(MetaEvent::new(
+                        delta_time, meta_type, length, data,
+                    )));
+                    if meta_type == META_END_OF_TRACK {
+                        break;
+                    }
+                } else {
+                    let a;
+                    if event_type & 0x80 != 0 {
+                        status = event_type;
+                        sstatus = status;
+                        a = buff[{
+                                     current_byte += 1;
+                                     current_byte - 1
+                                 }];
+                    } else {
+                        if status == 0 {
+                            println!("Read event: no running status {}", event_type);
+                            println!("sstatus is {}", sstatus);
+                            if sstatus == 0 {
+                                panic!();
+                            }
+                            sstatus = status;
+                        }
+                        a = event_type;
+                    }
+                    let channel = (status & 0xf) as u8;
+                    let mut b = 0;
+                    if status == EVENT_TYPE_NOTE_ON
+                        || status == EVENT_TYPE_NOTE_OFF
+                        || status == EVENT_TYPE_POLY_AFTER
+                        || status == EVENT_TYPE_CONTROLLER
+                        || status == EVENT_TYPE_PITCH_BEND
+                    {
+                        b = buff[{
+                                     current_byte += 1;
+                                     current_byte
+                                 }];
+                    }
+                    events.push(Event::Midi(MidiEvent::new(
+                        delta_time,
+                        event_type & 0xf0,
+                        channel,
+                        a,
+                        b,
+                    )));
                 }
-                chunks.push(Chunk::Track(TrackChunk { events: events }));
-            } else {
-                println!("Alien chunk");
             }
         }
 
-        MidiFile {
-            file_name: file_name,
-            chunks: chunks,
-        }
+        MidiFile::read_file("asdf".to_string())
     }
 
     pub fn write_file(&self) {
         let mut file = File::create(&self.file_name).expect("Can't open file");
         match &self.chunks[0] {
-            Chunk::Header(x) => file.write_all(&[0x4d as u8, 0x54 as u8, 0x68 as u8, 0x64 as u8, 0, 0, 0, 6 as u8, 0, x.file_type as u8, (x.ntrks >> 8) as u8, (x.ntrks & 0b11111111) as u8, (x.division >> 8) as u8, (x.division & 0b11111111) as u8]),
-            _ => panic!("CHUNK 0 IS NOT A HEADER")
+            Chunk::Header(x) => file.write_all(&[
+                0x4d as u8,
+                0x54 as u8,
+                0x68 as u8,
+                0x64 as u8,
+                0,
+                0,
+                0,
+                6 as u8,
+                0,
+                x.file_type as u8,
+                (x.ntrks >> 8) as u8,
+                (x.ntrks & 0b11111111) as u8,
+                (x.division >> 8) as u8,
+                (x.division & 0b11111111) as u8,
+            ]),
+            _ => panic!("CHUNK 0 IS NOT A HEADER"),
         };
         for i in self.chunks[1..].iter() {
             match i {
                 Chunk::Track(x) => unimplemented!(),
-                _ => panic!("CHUNK THAT IS NOT 0 IS A HEADER")
+                _ => panic!("CHUNK THAT IS NOT 0 IS A HEADER"),
             }
         }
     }
