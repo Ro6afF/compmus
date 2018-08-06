@@ -193,11 +193,11 @@ fn var_len_enc(mut val: u32) -> Vec<u8> {
 }
 
 pub struct MidiEvent {
-    delta_time: u32,
-    message_type: u8,
-    channel: u8,
-    data1: u8,
-    data2: u8,
+     delta_time: u32,
+     message_type: u8,
+     channel: u8,
+     data1: u8,
+     data2: u8,
 }
 
 impl MidiEvent {
@@ -211,16 +211,14 @@ impl MidiEvent {
         }
     }
 
-    pub fn to_byte_vec(&self) -> (u32, Vec<u8>) {
+    pub fn to_byte_vec(&self) -> Vec<u8> {
         let mut res = var_len_enc(self.delta_time);
         res.push(self.message_type + self.channel);
         res.push(self.data1);
         if !(self.message_type == 0b11000000 || self.delta_time == 0b11010000) {
             res.push(self.data2);
-            (3, res)
-        } else {
-            (2, res)
         }
+        res
     }
 }
 
@@ -236,7 +234,7 @@ impl fmt::Display for MidiEvent {
                 self.delta_time,
                 midi_event_type_to_string(self.message_type),
                 self.channel,
-                NOTES[self.data1 as usize],
+                NOTES[self.data1 as usize & 0b01111111],
                 self.data2
             )
         } else if self.message_type >> 4 == 0b1100 {
@@ -263,9 +261,9 @@ impl fmt::Display for MidiEvent {
 }
 
 pub struct SysEvent {
-    delta_time: u32,
-    message: u8,
-    bytes: Vec<u8>,
+     delta_time: u32,
+     message: u8,
+     bytes: Vec<u8>,
 }
 
 impl SysEvent {
@@ -275,6 +273,17 @@ impl SysEvent {
             message: message,
             bytes: bytes,
         }
+    }
+
+    pub fn to_byte_vec(&self) -> Vec<u8> {
+        let mut res = var_len_enc(self.delta_time);
+        res.push(self.message);
+        if self.bytes.len() != 0 {
+            for i in self.bytes.iter() {
+                res.push(*i);
+            }
+        }
+        res
     }
 }
 
@@ -300,14 +309,14 @@ impl fmt::Display for SysEvent {
 }
 
 pub struct MetaEvent {
-    delta_time: u32,
-    message_type: u8,
-    length: u64,
-    bytes: Vec<u8>,
+     delta_time: u32,
+     message_type: u8,
+     length: u32,
+     bytes: Vec<u8>,
 }
 
 impl MetaEvent {
-    pub fn new(delta_time: u32, message_type: u8, length: u64, bytes: Vec<u8>) -> MetaEvent {
+    pub fn new(delta_time: u32, message_type: u8, length: u32, bytes: Vec<u8>) -> MetaEvent {
         MetaEvent {
             delta_time: delta_time,
             message_type: message_type,
@@ -318,11 +327,14 @@ impl MetaEvent {
 
     pub fn to_byte_vec(&self) -> Vec<u8> {
         let mut res = var_len_enc(self.delta_time);
+        res.push(0xff as u8);
         res.push(self.message_type);
+        for i in var_len_enc(self.length) {
+            res.push(i);
+        }
         for i in self.bytes.iter() {
             res.push(*i);
         }
-
         res
     }
 }
@@ -426,20 +438,30 @@ pub enum Event {
     Sys(SysEvent),
 }
 
+impl Event {
+    pub fn to_byte_vec(&self) -> Vec<u8> {
+        match self {
+            Event::Midi(x) => x.to_byte_vec(),
+            Event::Meta(x) => x.to_byte_vec(),
+            Event::Sys(x) => x.to_byte_vec()
+        }
+    }
+}
+
 impl fmt::Display for Event {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Event::Midi(x) => x.fmt(f),
             Event::Meta(x) => x.fmt(f),
-            Event::Sys(x) => x.fmt(f),
+            Event::Sys(x) => x.fmt(f)
         }
     }
 }
 
 pub struct HeaderChunk {
-    file_type: u16,
-    ntrks: u16,
-    division: u16,
+     file_type: u16,
+     ntrks: u16,
+     division: u16,
 }
 
 impl HeaderChunk {
@@ -463,7 +485,7 @@ impl fmt::Display for HeaderChunk {
 }
 
 pub struct TrackChunk {
-    events: Vec<Event>,
+     events: Vec<Event>,
 }
 
 impl TrackChunk {
@@ -501,15 +523,15 @@ impl fmt::Display for Chunk {
 }
 
 pub struct MidiFile {
-    file_name: String,
-    chunks: Vec<Chunk>,
+     file_name: String,
+     pub chunks: Vec<Chunk>,
 }
 
 impl MidiFile {
     pub fn new(file_name: String, chunks: Vec<Chunk>) -> MidiFile {
-        if Path::new(&file_name).exists() {
+        /*if Path::new(&file_name).exists() {
             panic!("This file exists!");
-        }
+        }*/
         MidiFile {
             file_name: file_name,
             chunks: chunks,
@@ -532,14 +554,14 @@ impl MidiFile {
                 .map(|x| *x as char)
                 .collect::<String>();
             let mut chunk_length: u32 = 0;
-            let mut pow: u32 = 128 * 128 * 128;
+            let mut pow: u32 = 256 * 256 * 256;
             for i in buff[current_byte..({
                               current_byte += 4;
                               current_byte
                           })].iter()
             {
                 chunk_length += *i as u32 * pow;
-                pow /= 128;
+                pow /= 256;
             }
             if chunk_type == "MThd" {
                 let format: u16;
@@ -549,10 +571,10 @@ impl MidiFile {
                 format = buff[current_byte] as u16;
                 current_byte += 1;
 
-                ntrks = buff[current_byte] as u16 * 128 + buff[current_byte + 1] as u16;
+                ntrks = buff[current_byte] as u16 * 256 + buff[current_byte + 1] as u16;
                 current_byte += 2;
 
-                division = buff[current_byte] as u16 * 128 + buff[current_byte + 1] as u16;
+                division = buff[current_byte] as u16 * 256 + buff[current_byte + 1] as u16;
                 current_byte += 2;
                 chunks.push(Chunk::Header(HeaderChunk::new(format, ntrks, division)));
             } else if chunk_type == "MTrk" {
@@ -630,9 +652,9 @@ impl MidiFile {
                         let event_type = buff[current_byte];
                         current_byte += 1;
                         remaining_bytes -= 1;
-                        let mut length: u64 = 0;
+                        let mut length: u32 = 0;
                         while {
-                            length = (length << 7) + buff[current_byte] as u64 & 0x7f;
+                            length = (length << 7) + buff[current_byte] as u32 & 0x7f;
                             remaining_bytes -= 1;
                             buff[{
                                      current_byte += 1;
@@ -667,15 +689,48 @@ impl MidiFile {
     }
 
     pub fn write_file(&self) {
+        println!("{}", self);
         let mut file = File::create(&self.file_name).expect("Can't open file");
         match &self.chunks[0] {
-            Chunk::Header(x) => file.write_all(&[0x4d as u8, 0x54 as u8, 0x68 as u8, 0x64 as u8, 0, 0, 0, 6 as u8, 0, x.file_type as u8, (x.ntrks >> 8) as u8, (x.ntrks & 0b11111111) as u8, (x.division >> 8) as u8, (x.division & 0b11111111) as u8]),
-            _ => panic!("CHUNK 0 IS NOT A HEADER")
+            Chunk::Header(x) => file.write_all(&[
+                0x4d as u8,
+                0x54,
+                0x68,
+                0x64,
+                0,
+                0,
+                0,
+                6,
+                0,
+                x.file_type as u8,
+                (x.ntrks >> 8) as u8,
+                (x.ntrks & 0b11111111) as u8,
+                (x.division >> 8) as u8,
+                (x.division & 0b11111111) as u8,
+            ]),
+            _ => panic!("CHUNK 0 IS NOT A HEADER"),
         };
         for i in self.chunks[1..].iter() {
             match i {
-                Chunk::Track(x) => unimplemented!(),
-                _ => panic!("CHUNK THAT IS NOT 0 IS A HEADER")
+                Chunk::Track(x) => {
+                    file.write_all(&[0x4d as u8, 0x54, 0x72, 0x6b]);
+                    let mut data = vec![];
+                    for j in &x.events {
+                        for q in j.to_byte_vec() {
+                            data.push(q);
+                        }
+                    }
+                    file.write_all(&[
+                        (data.len() >> 24) as u8,
+                        ((data.len() >> 16) & 0xff) as u8,
+                        ((data.len() >> 8) & 0xff) as u8,
+                        (data.len() & 0xff) as u8,
+                    ]);
+                    for j in data {
+                        file.write_all(&[j]);
+                    }
+                }
+                _ => panic!("CHUNK {} IS NOT IS A TRACK", i),
             }
         }
     }
