@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-const NOTES: [&'static str; 128] = [
+pub const NOTES: [&'static str; 128] = [
     "C - 0", "C# - 0", "D - 0", "D# - 0", "E - 0", "F - 0", "F# - 0", "G - 0", "G# - 0", "A - 0",
     "A# - 0", "B - 0", "C - 1", "C# - 1", "D - 1", "D# - 1", "E - 1", "F - 1", "F# - 1", "G - 1",
     "G# - 1", "A - 1", "A# - 1", "B - 1", "C - 2", "C# - 2", "D - 2", "D# - 2", "E - 2", "F - 2",
@@ -19,7 +19,7 @@ const NOTES: [&'static str; 128] = [
     "C - 10", "C# - 10", "D - 10", "D# - 10", "E - 10", "F - 10", "F# - 10", "G - 10",
 ];
 
-const INSTRUMENTS: [&'static str; 128] = [
+pub const INSTRUMENTS: [&'static str; 128] = [
     "Acoustic Grand",
     "Bright Acoustic",
     "Electric Grand",
@@ -193,11 +193,11 @@ fn var_len_enc(mut val: u32) -> Vec<u8> {
 }
 
 pub struct MidiEvent {
-     delta_time: u32,
-     message_type: u8,
-     channel: u8,
-     data1: u8,
-     data2: u8,
+    pub delta_time: u32,
+    pub message_type: u8,
+    pub channel: u8,
+    pub data1: u8,
+    pub data2: u8,
 }
 
 impl MidiEvent {
@@ -261,9 +261,9 @@ impl fmt::Display for MidiEvent {
 }
 
 pub struct SysEvent {
-     delta_time: u32,
-     message: u8,
-     bytes: Vec<u8>,
+    pub delta_time: u32,
+    pub message: u8,
+    pub bytes: Vec<u8>,
 }
 
 impl SysEvent {
@@ -309,10 +309,10 @@ impl fmt::Display for SysEvent {
 }
 
 pub struct MetaEvent {
-     delta_time: u32,
-     message_type: u8,
-     length: u32,
-     bytes: Vec<u8>,
+    pub delta_time: u32,
+    pub message_type: u8,
+    pub length: u32,
+    pub bytes: Vec<u8>,
 }
 
 impl MetaEvent {
@@ -443,7 +443,7 @@ impl Event {
         match self {
             Event::Midi(x) => x.to_byte_vec(),
             Event::Meta(x) => x.to_byte_vec(),
-            Event::Sys(x) => x.to_byte_vec()
+            Event::Sys(x) => x.to_byte_vec(),
         }
     }
 }
@@ -453,15 +453,62 @@ impl fmt::Display for Event {
         match self {
             Event::Midi(x) => x.fmt(f),
             Event::Meta(x) => x.fmt(f),
-            Event::Sys(x) => x.fmt(f)
+            Event::Sys(x) => x.fmt(f),
         }
     }
 }
 
+/*impl cmp::PartialEq for Event {
+    fn eq(&self, other: &Event) -> bool {
+        match self {
+            Event::Meta(_) => match other {
+                Event::Midi(_) => return false,
+                Event::Sys(_) => return false,
+                _ => {}
+            },
+            Event::Midi(_) => match other {
+                Event::Meta(_) => return false,
+                Event::Sys(_) => return false,
+                _ => {}
+            },
+            Event::Sys(_) => match other {
+                Event::Meta(_) => return false,
+                Event::Midi(_) => return false,
+                _ => {}
+            },
+        };
+
+        match self {
+            Event::Meta(x) => match other {
+                Event::Meta(y) => {
+                    if x.message_type != y.message_type || x.length != y.length {
+                        return false;
+                    }
+                    for i in 0..x.bytes.len() {
+                        if x.bytes[i] != y.bytes[i] {
+                            return false;
+                        }
+                    }
+                },
+                _ => unreachable!()
+            },
+            Event::Midi(x) => match other {
+                Event::Midi(y) => {
+                    if x.message_type != y.message_type || x.channel !
+                },
+                _ => unreachable!()
+            }
+        };
+        true
+    }
+}
+
+impl cmp::Eq for Event {}*/
+
 pub struct HeaderChunk {
-     file_type: u16,
-     ntrks: u16,
-     division: u16,
+    pub file_type: u16,
+    pub ntrks: u16,
+    pub division: u16,
 }
 
 impl HeaderChunk {
@@ -485,7 +532,7 @@ impl fmt::Display for HeaderChunk {
 }
 
 pub struct TrackChunk {
-     events: Vec<Event>,
+    pub events: Vec<Event>,
 }
 
 impl TrackChunk {
@@ -523,15 +570,15 @@ impl fmt::Display for Chunk {
 }
 
 pub struct MidiFile {
-     file_name: String,
-     pub chunks: Vec<Chunk>,
+    pub file_name: String,
+    pub chunks: Vec<Chunk>,
 }
 
 impl MidiFile {
     pub fn new(file_name: String, chunks: Vec<Chunk>) -> MidiFile {
-        /*if Path::new(&file_name).exists() {
+        if Path::new(&file_name).exists() {
             panic!("This file exists!");
-        }*/
+        }
         MidiFile {
             file_name: file_name,
             chunks: chunks,
