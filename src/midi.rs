@@ -458,53 +458,6 @@ impl fmt::Display for Event {
     }
 }
 
-/*impl cmp::PartialEq for Event {
-    fn eq(&self, other: &Event) -> bool {
-        match self {
-            Event::Meta(_) => match other {
-                Event::Midi(_) => return false,
-                Event::Sys(_) => return false,
-                _ => {}
-            },
-            Event::Midi(_) => match other {
-                Event::Meta(_) => return false,
-                Event::Sys(_) => return false,
-                _ => {}
-            },
-            Event::Sys(_) => match other {
-                Event::Meta(_) => return false,
-                Event::Midi(_) => return false,
-                _ => {}
-            },
-        };
-
-        match self {
-            Event::Meta(x) => match other {
-                Event::Meta(y) => {
-                    if x.message_type != y.message_type || x.length != y.length {
-                        return false;
-                    }
-                    for i in 0..x.bytes.len() {
-                        if x.bytes[i] != y.bytes[i] {
-                            return false;
-                        }
-                    }
-                },
-                _ => unreachable!()
-            },
-            Event::Midi(x) => match other {
-                Event::Midi(y) => {
-                    if x.message_type != y.message_type || x.channel !
-                },
-                _ => unreachable!()
-            }
-        };
-        true
-    }
-}
-
-impl cmp::Eq for Event {}*/
-
 pub struct HeaderChunk {
     pub file_type: u16,
     pub ntrks: u16,
