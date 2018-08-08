@@ -3,27 +3,29 @@ mod analytics;
 mod midi;
 use midi::*;
 use rand::prelude::*;
-mod neural_network;
 
 fn main() {
-    let inp = MidiFile::read_file(
-        "/home/ro6aff/compmus/examples/mozart_symphony_no-40.mid".to_string(),
-    );
+    let inp = MidiFile::read_file("/home/ro6aff/compmus/examples/bach_tocatta_fugue_d_minor.mid".to_string());
     println!("{}\n---------------------------", inp);
     let plok = analytics::construct_probalility_table(&inp);
+    let mut currn = (61, 512);
     for (k, v) in &plok {
-        println!("{}:", NOTES[*k as usize]);
+        match k {
+            (x, z) => {
+                println!("({}, {}):", NOTES[*x as usize], z);
+                //currn = (*x, *z)
+            }
+        }
         for i in v {
             match i {
-                (a, b) => println!("\t{} -> {}", NOTES[*a as usize], b),
+                ((a, b), c) => println!("\t({}, {}) -> {}", NOTES[*a as usize], b, c),
             }
         }
     }
-    println!("----------------------------");
-    let mut currn: u8 = 60;
     let mut rng = thread_rng();
+    println!("----------------------------");
     let mut chunks = vec![];
-    chunks.push(Chunk::Header(HeaderChunk::new(1, 1, 16)));
+    chunks.push(Chunk::Header(HeaderChunk::new(1, 1, 256)));
     let mut events = vec![];
     events.push(Event::Meta(MetaEvent::new(
         0,
@@ -32,11 +34,14 @@ fn main() {
         vec![0xf, 0x42, 0x40],
     )));
     events.push(Event::Meta(MetaEvent::new(0, 0x58, 04, vec![4, 2, 48, 8])));
-    events.push(Event::Midi(MidiEvent::new(0, 0b11000000, 0, 20, 0)));
     for _ in 0..100 {
-        println!("{}", NOTES[currn as usize]);
-        events.push(Event::Midi(MidiEvent::new(0, 0b10010000, 0, currn, 127)));
-        events.push(Event::Midi(MidiEvent::new(8, 0b10000000, 0, currn, 0)));
+        match currn {
+            (a, b) => {
+                println!("{}, {}", NOTES[a as usize], b);
+                events.push(Event::Midi(MidiEvent::new(0, 0b10010000, 0, a, 127)));
+                events.push(Event::Midi(MidiEvent::new(b, 0b10000000, 0, a, 0)));
+            }
+        }
         let mut blqh: f32 = rng.gen();
         let mut currc = 0.0;
         for i in &plok[&currn] {

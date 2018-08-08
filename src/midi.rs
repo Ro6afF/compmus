@@ -689,7 +689,6 @@ impl MidiFile {
     }
 
     pub fn write_file(&self) {
-        println!("{}", self);
         let mut file = File::create(&self.file_name).expect("Can't open file");
         match &self.chunks[0] {
             Chunk::Header(x) => file.write_all(&[
