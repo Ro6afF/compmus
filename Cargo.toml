@@ -5,3 +5,4 @@ authors = ["Ro6afF <dimo_chanev@windowslive.com>"]
 
 [dependencies]
 rand = "0.5.4"
+rimd = "0.0.1"

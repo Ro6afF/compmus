@@ -3,3 +3,11 @@ Cargo.lock
 target
 examples
 results
+demo
+*.aux
+*fls
+*.toc
+*.log
+*.out
+*.gz
+*.fdb_latexmk
