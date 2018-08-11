@@ -8,6 +8,7 @@
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{subcaption}
+\usepackage{svg}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 
@@ -177,11 +178,11 @@
                         \draw [arrow] (in1) -- (pro1);
                         \node (pro2) [process, below of=pro1] {Select note};
                         \draw [arrow] (pro1) -- (pro2);
-                        \node (out1) [io, below of=pro2] {Write the tune in file};
+                        \node (out1) [io, below of=pro2] {Write the note in file};
                         \draw [arrow] (pro2) -- (out1);
                         \node (pro3) [process, below of=out1] {Select next note by chance};
                         \draw [arrow] (out1) -- (pro3);
-                        \node (loop) [decision, below of=pro3, yshift=-0.5cm] {Should end};
+                        \node (loop) [decision, below of=pro3, yshift=-0.5cm] {End?};
                         \draw [arrow] (pro3) -- (loop);
                         \draw [arrow] (loop.west) -- ++(-3,0) -- ++(0,1.75) -- ++(0,1.75) -- node[xshift=1.2cm,yshift=-1.5cm, text width=2.5cm] {no}(out1.west);
                         \node (end) [startstop, below of=loop, yshift=-0.9cm]{End};
@@ -193,11 +194,16 @@
             \subsubsection{Algorithm with one tune pitch}
             \paragraph{}This algorithm constructs a Markov table based only on the frequencies of the tones. The size of the table depends on the variety of tunes used. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.
             \subsubsection{Algorithm with one tune pitch and note duration}
-            \paragraph{}This algorithm constructs a Markov table based on the frequencies of the tones and their length. Because of this the size of the table increases and the size depends ont only on the variety of notes but on the variety of note lengths. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.\paragraph{}
+            \paragraph{}This algorithm constructs a Markov table based on the frequencies of the tones and their length. Because of this the size of the table increases and the size depends ont only on the variety of notes but on the variety of note lengths. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.
             \subsubsection{Algorithm with two tune pitch}
             \paragraph{}This algorithm constructs a Markov table based only on the frequencies of the tones but it calculates the chance of next event, based ont he previous two, so the size of the table increases and is the size of the table in 1.4.1 sqared. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.
             \subsubsection{Rust}
             \paragraph{}All the implementations of the algorithms for the project are written in Rust programming language. It is based on C but it gaurantees memory safety, threads without data races, generics(templates) and the standart library is bigger and has some bindings for functional programming.
         \newpage
-    \section{Future}
+    \section{Results}
+        \paragraph{}Here are listed some results. The tests are runned with original music ``Noctune op.9 no.2'' written by Chopin. Here is the music sheet of the piece(all the sheets are given in the github repo of the project like midi files):\\
+        \includegraphics[scale=0.59]{original}\\
+        \includegraphics[scale=0.5]{result_one_note}
+        \includegraphics[scale=0.5]{result_one_note_time}
+        \includegraphics[scale=0.5]{result_pair_notes}
 \end{document}
