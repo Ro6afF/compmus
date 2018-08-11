@@ -12,7 +12,12 @@
 \usepackage[english]{babel}
 
 \usepackage{tikz}
-\usetikzlibrary{trees}
+\usetikzlibrary{shapes.geometric, arrows}
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
 
 \hypersetup{
     colorlinks,
@@ -21,7 +26,7 @@
     urlcolor={black}
 }
 
-\title{Something with music}
+\title{Analyzing and composing music with algorithms and machine learning}
 \author{
     \begin{tabular}{rl}
         \normalsize{Author: } & \normalsize{Dimo Chanev} \\
@@ -38,23 +43,23 @@
 
     \newpage
     \begin{abstract}
-        The goal of the project is to compare, experiment and proove some mathematical algorithms for creating music with random numbers. The algorithms are based on analyzing some relations from given note notations of exsisting melodies.
+        The goal of the project is to compare, experiment and proove some mathematical algorithms for analyzing music and composing a similar pieces of music with random numbers. The algorithms are based on analyzing some relations from given note notations of given melodies, in form of standart MIDI files.
     \end{abstract}
 
     \newpage
 
     \section{Introduction}
-        \subsection { Frequency relations (tuning)}
-            The sound is type of mechanical vibration (waves) so it has the parameters of all the normal mechanical waves. However in the field of music we are most interested in the frequency of the wave, because it makes the variety of tones we hear. But not every sequence of frequencies sound pleasent to the human. So the pepole developed some algorithms to ``syncronize'' the sequence of tunes. Here are the most used of them:
+        \subsection {Frequency relations (tuning)}
+        \paragraph{} The sound is type of mechanical vibration (waves) so it has the parameters of all the normal mechanical waves. However in the field of music we are most interested in the frequency of the wave, because it makes the variety of tones we hear. But not every sequence of frequencies sounds pleasent to the human. So the people developed some algorithms to ``syncronize'' the sequence of tunes. Here are the most used of them:
 
             \subsubsection {Pythagorean tuning} 
-                The pythagorean tuning is the base of almost all tuning sysytems. It is based on the pythagorean fractions.\\
+            \paragraph{} The Pythagorean tuning is the base of almost all tuning sysytems. It is based on the Pythagorean fractions.\\
                 \begin{figure}[h]
                     $$f = \frac{i + 1}{i} ;\ i = 1, 2, ..., n$$
                     \caption{Pythagorean fractions}
-                \end{figure}\\
-                It is assumed that if the frequencies corelate like these numbers, we hear them in harmony and the music will sound pleasent (if we select appropriate sequence of these tones of courses).\\
-                If we pick a string with given length we know that the frequency of the produced sound depends on the length of the string. So to pick the ``perfect'' fraction we have to devide it like the pythagorean fractions.
+                \end{figure}\paragraph{}
+                It is assumed that if the frequencies corelate like these numbers, we hear them in harmony and the music will sound pleasent (if we select appropriate sequence of these tones of course).\paragraph{}
+                If we pick a string with given length we know that the frequency of the produced sound depends on the length of the string. So to pick the ``perfect'' fraction we have to devide it like the Pythagorean fractions.
                 \begin{figure}[h]
                     \begin{center}
                         \begin{tikzpicture}
@@ -79,10 +84,10 @@
                 \end{figure}
 
             \subsubsection{Equal temperament}
-                Equal temperament is a tuning scale developed by Vincenzo Galilei. His idea is that the frequency interval between each pair of ajacent notes is the same. In equal temperament tunings, the generating interval is often found by dividing some larger desired interval into a number of smaller equal steps (equal frequency ratios between neighbouring notes). The tones are devided in groups called octaves. The ratio between the frequencies of last and the first tone of the octave is two.
-                $$\frac{last\ tune}{first\ tune} = \frac{2}{1}$$ \\
-                In the Western music, the most common used tunning system sice the 18th century has been the twelve-tone equal temperament(or 12-TET). The 12-TET devides the octave in 12 eqal parts, all of them eqal on logaritmic scale, with ratio $\sqrt[12]{2} = 2^\frac{1}{12} \approx 1.05946$. In modern times 12-TET is usually tunned relatively to the standart frequency of 440 Hz, called A440, meaning that the note A is tuned to 440 Hz and all others are derived by the logaritmic scale described above. \\
-                Equal temperament is an approximation of the pythagorean scale, which is more convinient for use.\\
+            \paragraph{}Equal temperament is a tuning scale developed by Vincenzo Galilei. His idea is that the frequency ratio between each pair of ajacent notes is the same. In equal temperament tunings, the generating interval is often found by dividing some larger desired interval into a number of smaller equal steps (equal frequency ratios between neighbouring notes). The tones are devided in groups called octaves. The ratio between the frequencies of last and the first tone of the octave is two.
+                $$\frac{last\ tune}{first\ tune} = \frac{2}{1}$$ \paragraph{}
+                In the Western music, the most commonly used tunning system since the 18th century has been the twelve-tone equal temperament(or 12-TET). The 12-TET devides the octave in 12 eqal parts, all of them eqal on logaritmic scale, with ratio $\sqrt[12]{2} = 2^\frac{1}{12} \approx 1.05946$. In modern times 12-TET is usually tunned relatively to the standart frequency of 440 Hz, called A4, meaning that the note A is tuned to 440 Hz and all other note are derived by the logaritmic scale described above. \paragraph{}
+                Equal temperament is an approximation of the Pythagorean scale, which is more convinient for use.\\
                 \begin{figure}[h]
                     \begin{center}
                         \begin{tabular}{| l | l | l | l |}
@@ -101,17 +106,17 @@
                             Minor seventh ($A\sharp/B\flat$) & $2^\frac{10}{12} \approx 1.78179$ & $\frac{16}{9} \approx 1.77777$* \\ \hline
                             Major seventh ($B$) & $2^\frac{11}{12} \approx 1.88774$ & $\frac{15}{8} = 1.875$* \\ \hline
                             Octave ($C$) & $2^\frac{12}{12} = 2$ & $\frac{2}{1} = 2$ \\ \hline
-                            \multicolumn{3}{c}{Note: the values with * can't be represented with decent accuracy}\\
+                            \multicolumn{3}{c}{Note: the values with * can't be represented like Pythagorean fractions with decent accuracy}\\
                             \multicolumn{3}{c}{but the human ear can't differentiate this (in the most cases).}\\
                         \end{tabular}
-                        \caption{Values of the tones in 12-TET and pythagorean scale}
+                        \caption{Values of the tones in 12-TET and Pythagorean scale}
                     \end{center}
                 \end{figure}
-        \subsection { MIDI standart }
-            The purpose of MIDI is to define a way compact representation of musical sheets, which makes it appropriate for disk storage.\\
+        \subsection {MIDI standart}
+        \paragraph{} The purpose of MIDI is to define a way compact representation of musical sheets, which makes it appropriate for disk storage.\paragraph{}
             The standart MIDI(SMID) file is devided into chunks. Each chunk has a type and length represented as ASCII and 32 bit number respectively. There are two types of chunks: ``MThd''(e.g. Header chunk) and ``MTrk''(e.g. Track chunk). There is always one header while there can be more than one track.
             \subsubsection{Header chunk}
-                The header chunk contains data for the whole file. It has fixed length of 6 bytes. The first 2 bytes represent the format of file:
+            \paragraph{}The header chunk contains data for the whole file. It has fixed length of 6 bytes. The first 2 bytes represent the format of file:
                 \begin{itemize}
                     \item 0 $\to$ One track
                     \item 1 $\to$ Multiple tracks but one song
@@ -119,58 +124,80 @@
                 \end{itemize}
                 The second 2 bytes represent the number of tracks. For format 0 it is always 1. And the last two bytes represent how many ticks are in a quarter note.
             \subsubsection{Track chunks}
-                Each track is composed of events. Each event has delta time - the time (in ticks) which passes after the previous event before executing this event. There are two types of events: MIDI events - the ones which represent the actual music and META - these which supply additional info like titles, lyrics, etc. \\
+            \paragraph{}Each track is composed of events. Each event has delta time - the time (in ticks) which passes after the previous event before executing this event. There are two types of events: MIDI events - the ones which represent the actual music and META - these which supply additional info like titles, lyrics, etc. \paragraph{}
                 Each MIDI event that has to play note uses this standart for encoding the frequency of the played tune:
                 $$f = 440 * 2^\frac{d - 69}{12}\ where\ d\ is\ the\ note\ number\ and\ f\ is\ the\ frequency$$
                 Therefore the note number is:
                 $$d = 69 + 12\log_2 \frac{f}{440}$$
         \subsection{Markov chains}
-                Markov chain is a stochastic model which describes a sequence of events in which the probability of each event depends entierly on the previous event (in some cases the previous $n$ but the table which decribes the chain size becomes big quickly because it equals to $n^2$).\\
-                Markov chains are represented as table in the most cases. Each cell of the table hold the probability of triggering an event from the row/collumn after the event in the collumn/row respectively.
+        \paragraph{}Markov chain is a stochastic model which describes a sequence of events in which the probability of each event depends entierly on the previous event (in some cases the previous $n$ but the table which decribes the chain size becomes big quickly because it equals to $k^n\ where\ k\ is\ the\ number\ of\ events$).\paragraph{}
+                Markov chains are represented as table in the most cases. Each cell of the table hold the probability of triggering an event from the row/collumn after the event in the collumn/row respectively (see Figure 4).
                 \begin{figure}[h]
-                    \centering
-                    \begin{subfigure}[a]{0.4\textwidth}
-                        \begin{tabular}{|c|c|c|c|}
-                            \hline
-                            & \multicolumn{3}{|c|}{Next event} \\ \cline{2-4}
-                            & A & B & C \\ \hline
-                            A & 20\% & 60\% & 20\% \\ \hline
-                            B & 40\% & 20\% & 40\% \\ \hline
-                            C & 10\% & 20\% & 70\% \\ \hline
-                        \end{tabular}
-                    \end{subfigure}
-                    \begin{subfigure}[b]{0.4\textwidth}
-                        \begin{tabular}{|c|c|c|c|c|}
-                            \hline
-                            \multicolumn{2}{|c|}{} & \multicolumn{3}{|c|}{Next event} \\ \cline{3-5}
-                            \multicolumn{2}{|c|}{} & A & B & C \\ \hline
-                            A & A & 20\% & 60\% & 20\% \\ \hline
-                            A & B & 40\% & 20\% & 40\% \\ \hline
-                            A & C & 10\% & 20\% & 70\% \\ \hline
-                            B & A & 30\% & 50\% & 20\% \\ \hline
-                            B & B & 35\% & 25\% & 40\% \\ \hline
-                            B & C & 70\% & 14\% & 16\% \\ \hline
-                            C & A & 90\% &  6\% &  4\% \\ \hline
-                            C & B & 10\% & 10\% & 80\% \\ \hline
-                            C & C &  7\% & 43\% & 50\% \\ \hline
-                        \end{tabular}
-                    \end{subfigure}
-                    \caption{Example Markov chains}
+                    \begin{center}
+                        
+                        \begin{subfigure}[a]{0.4\textwidth}
+                            \begin{tabular}{|c|c|c|c|}
+                                \hline
+                                & \multicolumn{3}{|c|}{Next event} \\ \cline{2-4}
+                                & A & B & C \\ \hline
+                                A & 33\% & 22\% & 45\% \\ \hline
+                                B & 81\% & 9\% & 10\% \\ \hline
+                                C & 30\% & 60\% & 10\% \\ \hline
+                            \end{tabular}
+                        \end{subfigure}
+                        \begin{subfigure}[b]{0.4\textwidth}
+                            \begin{tabular}{|c|c|c|c|c|}
+                                \hline
+                                \multicolumn{2}{|c|}{} & \multicolumn{3}{|c|}{Next event} \\ \cline{3-5}
+                                \multicolumn{2}{|c|}{} & A & B & C \\ \hline
+                                A & A & 16\% & 16\% & 68\% \\ \hline
+                                A & B & 100\% & 0\% & 0\% \\ \hline
+                                A & C & 12\% & 75\% & 13\% \\ \hline
+                                B & A & 37\% & 25\% & 38\% \\ \hline
+                                B & B & 0\% & 0\% & 100\% \\ \hline
+                                B & C & 100\% & 0\% & 0\% \\ \hline
+                                C & A & 33\% & 33\% & 34\% \\ \hline
+                                C & B & 83\% & 17\% & 0\% \\ \hline
+                                C & C & 100\% & 0\% & 0\% \\ \hline
+                            \end{tabular}
+                        \end{subfigure}
+                        \caption{Markov chains for the string \\``AABAACBABACBABACCACAACBAAACBACBBCABAACBA''}
+                    \end{center}
                 \end{figure}
-        \subsection{Used algorithms}
+                \newpage
+                \subsection{Used algorithms}
+                \paragraph{}Each algorithm is based on analitics with Markov chains.
+            \begin{figure}[h]
+                \begin{center}
+                    \begin{tikzpicture}[thick,scale=0.7, every node/.style={scale=0.7}, node distance=1.5cm]
+                        \node (start) [startstop] {Start};
+                        \node (in1) [io, below of=start] {Read the MIDI file};
+                        \draw [arrow] (start) -- (in1);
+                        \node (pro1) [process, below of=in1] {Construct Markov table/chain};
+                        \draw [arrow] (in1) -- (pro1);
+                        \node (pro2) [process, below of=pro1] {Select note};
+                        \draw [arrow] (pro1) -- (pro2);
+                        \node (out1) [io, below of=pro2] {Write the tune in file};
+                        \draw [arrow] (pro2) -- (out1);
+                        \node (pro3) [process, below of=out1] {Select next note by chance};
+                        \draw [arrow] (out1) -- (pro3);
+                        \node (loop) [decision, below of=pro3, yshift=-0.5cm] {Should end};
+                        \draw [arrow] (pro3) -- (loop);
+                        \draw [arrow] (loop.west) -- ++(-3,0) -- ++(0,1.75) -- ++(0,1.75) -- node[xshift=1.2cm,yshift=-1.5cm, text width=2.5cm] {no}(out1.west);
+                        \node (end) [startstop, below of=loop, yshift=-0.9cm]{End};
+                        \draw [arrow] (loop) -- node[anchor=east] {yes} (end);
+                    \end{tikzpicture}
+                    \caption{A common block diagram of the algorithms}
+                \end{center}
+            \end{figure}
+            \subsubsection{Algorithm with one tune pitch}
+            \paragraph{}This algorithm constructs a Markov table based only on the frequencies of the tones. The size of the table depends on the variety of tunes used. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.
+            \subsubsection{Algorithm with one tune pitch and note duration}
+            \paragraph{}This algorithm constructs a Markov table based on the frequencies of the tones and their length. Because of this the size of the table increases and the size depends ont only on the variety of notes but on the variety of note lengths. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.\paragraph{}
+            \subsubsection{Algorithm with two tune pitch}
+            \paragraph{}This algorithm constructs a Markov table based only on the frequencies of the tones but it calculates the chance of next event, based ont he previous two, so the size of the table increases and is the size of the table in 1.4.1 sqared. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.
+            \subsubsection{Rust}
+            \paragraph{}All the implementations of the algorithms for the project are written in Rust programming language. It is based on C but it gaurantees memory safety, threads without data races, generics(templates) and the standart library is bigger and has some bindings for functional programming.
         \newpage
     \section{Future}
-    Sonething interesting
-    \section{Acknowledgments}
-        \Large{Special thanks to:
-            \begin{itemize}
-                \item I still don't know
-            \end{itemize}
-        }
-        \large{Thanks also to:
-            \begin{itemize}
-                \item I still don't know
-            \end{itemize}
-        }
-
 \end{document}
