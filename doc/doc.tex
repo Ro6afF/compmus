@@ -24,7 +24,7 @@
     colorlinks,
     linkcolor={black},
     citecolor={black},
-    urlcolor={black}
+    urlcolor={blue}
 }
 
 \title{Analyzing and composing music with algorithms and machine learning}
@@ -132,10 +132,9 @@
                 $$d = 69 + 12\log_2 \frac{f}{440}$$
         \subsection{Markov chains}
         \paragraph{}Markov chain is a stochastic model which describes a sequence of events in which the probability of each event depends entierly on the previous event (in some cases the previous $n$ but the table which decribes the chain size becomes big quickly because it equals to $k^n\ where\ k\ is\ the\ number\ of\ events$).\paragraph{}
-                Markov chains are represented as table in the most cases. Each cell of the table hold the probability of triggering an event from the row/collumn after the event in the collumn/row respectively (see Figure 4).
+                Markov chains are represented as table in the most cases. Each cell of the table hold the probability of triggering an event from the row/collumn after the event in the collumn/row respectively (see Figure \ref{fig:markov}).
                 \begin{figure}[h]
                     \begin{center}
-                        
                         \begin{subfigure}[a]{0.4\textwidth}
                             \begin{tabular}{|c|c|c|c|}
                                 \hline
@@ -162,13 +161,14 @@
                                 C & C & 100\% & 0\% & 0\% \\ \hline
                             \end{tabular}
                         \end{subfigure}
-                        \caption{Markov chains for the string \\``AABAACBABACBABACCACAACBAAACBACBBCABAACBA''}
                     \end{center}
+                    \caption{Markov chains for the string \\``AABAACBABACBABACCACAACBAAACBACBBCABAACBA''}
+                    \label{fig:markov}
                 \end{figure}
                 \newpage
                 \subsection{Used algorithms}
-                \paragraph{}Each algorithm is based on analitics with Markov chains.
-            \begin{figure}[h]
+                \paragraph{}Each algorithm is based on analitics with Markov chains. Their common block diagram is represented in Figure \ref{fig:diag}.
+            \begin{figure}[h!]
                 \begin{center}
                     \begin{tikzpicture}[thick,scale=0.7, every node/.style={scale=0.7}, node distance=1.5cm]
                         \node (start) [startstop] {Start};
@@ -189,6 +189,7 @@
                         \draw [arrow] (loop) -- node[anchor=east] {yes} (end);
                     \end{tikzpicture}
                     \caption{A common block diagram of the algorithms}
+                    \label{fig:diag}
                 \end{center}
             \end{figure}
             \subsubsection{Algorithm with one tune pitch}
@@ -201,9 +202,36 @@
             \paragraph{}All the implementations of the algorithms for the project are written in Rust programming language. It is based on C but it gaurantees memory safety, threads without data races, generics(templates) and the standart library is bigger and has some bindings for functional programming.
         \newpage
     \section{Results}
-        \paragraph{}Here are listed some results. The tests are runned with original music ``Noctune op.9 no.2'' written by Chopin. Here is the music sheet of the piece(all the sheets are given in the github repo of the project like midi files):\\
-        \includegraphics[scale=0.59]{original}\\
-        \includegraphics[scale=0.5]{result_one_note}
-        \includegraphics[scale=0.5]{result_one_note_time}
-        \includegraphics[scale=0.5]{result_pair_notes}
-\end{document}
+        \paragraph{}Here are given some exaple results from thext. The tests are runned with original music ``Noctune op. 9 no. 2'' written by Chopin (the note notation is given in Figure \ref{fig:original}):
+        \begin{itemize}
+            \item Below are shown the results of the algorithm that constructs the Markov chain with one note before an event without using the length.\\
+            \includegraphics[scale=0.6]{result_one_note}
+            \item Below are shown the results of the algorithm that constructs the Markov chain with one note before an event using the length.\\
+            \includegraphics[scale=0.6]{result_one_note_time}
+            \item Below are shown the results of the algorithm that constructs the Markov chain with two notes before an event without using the length.\\
+            \includegraphics[scale=0.6]{result_pair_notes}
+        \end{itemize} 
+        All the sheets are given in the \href{https://github.com/Ro6afF/compmus/tree/master/doc}{github repo} of the project like midi files if you are interested in hearing what they sound like.
+        \begin{figure}[h!]
+            \includegraphics[scale=0.7]{original}
+            \caption{Noctune op. 9 no. 2 by Chopin}
+            \label{fig:original}
+        \end{figure}
+        \newpage
+    \section{Future}
+        \paragraph{}The future of the project consists in developing more algorithms for composing music and statistical models. Here are listed the planned improvments:
+        \begin{enumerate}
+            \item Parallelze the algorithms to improove the speed of the construction of the table because on large ammount of notes the algorithm that use the length of the notes is too slow)
+            \item Implement the algorithm that uses a pair of notes to predict the next one
+            \item Use Markov chains to check the similarity of two musical pieces
+            \item Use reccurent neural networs generate music
+            \item Search and implement other algorithms
+        \end{enumerate}
+    \section{Code}
+        All the following link lead to certain branches or commits of the \href{https://github.com}{GitHub} repository of the project:
+        \begin{itemize}
+            \item \href{https://github.com/Ro6afF/compmus/tree/0cf9173a547a9effdc720dc6f6ac8ad551cd2fa4}{Implelentation of the algorithm that constructs the table using one note for next note prediction}
+            \item \href{https://github.com/Ro6afF/compmus/tree/One_note_with_time}{Implelentation of the algorithm that constructs the table using one note and its length for next note prediction}
+            \item \href{https://github.com/Ro6afF/compmus/tree/72fbc777ef7371ac7810d87d306ba3a2e8267121}{Implelentation of the algorithm that constructs the table using two notes for next note prediction}
+        \end{itemize}
+\end{document} 
