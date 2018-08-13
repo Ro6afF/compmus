@@ -11,3 +11,5 @@ demo
 *.out
 *.gz
 *.fdb_latexmk
+*.bbl
+*.blg

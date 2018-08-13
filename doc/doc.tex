@@ -207,7 +207,7 @@
             \subsubsection{Algorithm with two tune pitch}
             \paragraph{}This algorithm constructs a Markov table based only on the frequencies of the tones but it calculates the chance of next event, based ont he previous two, so the size of the table increases and is the size of the table in 1.4.1 sqared. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.
             \subsubsection{Rust}
-            \paragraph{}All the implementations of the algorithms for the project are written in Rust programming language. It is based on C but it guarantees memory safety, threads without data races, generics(templates) and the standard library is bigger and has some bindings for functional programming.
+            \paragraph{}All the implementations of the algorithms for the project are written in Rust programming language\cite{rust}. It is based on C but it guarantees memory safety, threads without data races, generics(templates) and the standard library is bigger and has some bindings for functional programming.
     \section{Results}
         \paragraph{}Here are given some example results from tests. The tests are runed with original music ``Noctune op. 9 no. 2'' written by Chopin (the note notation is given in Figure \ref{fig:original}):
         \begin{itemize}
@@ -242,8 +242,6 @@
             \item \href{https://github.com/Ro6afF/compmus/tree/72fbc777ef7371ac7810d87d306ba3a2e8267121}{Implelentation of the algorithm that constructs the table using two notes for next note prediction}
         \end{itemize}
         \newpage
-    \bibliography{info}{}
-    \bibliographystyle{plain}
     {\large{\textbf{Aknowledgements}}}
     \begin{itemize}
         \item Emil Kelevedjiev - for explaining the theory of Markov chains and introduction to the music programming
@@ -252,6 +250,8 @@
         \item Pressiana Marinova - 6toto sa pi4ui
         \item Zvezdin Besarabov - help with the structure of the paper
         \item HSSIMI - for the opportunity to participate in SRS '18
+    \bibliography{info}{}
+    \bibliographystyle{plain}
 
     \end{itemize}
 \end{document} 
