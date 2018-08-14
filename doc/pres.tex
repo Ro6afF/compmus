@@ -126,11 +126,19 @@
                 nn - the number of track chunks\\
                 dd - the way of division of the time\\
             \end{center}
-
         \end{frame}
         \subsection{Track chunks}
         \begin{frame}
             \frametitle{Track chunks}
+            Each track chunk is built up by events (messages). Each event has delta time and data bytes.
+            The most important events are:
+            \begin{itemize}
+                \item NOTE\_ON - start playing a note
+                \item NOTE\_OFF - stop playing a note
+            \end{itemize}
+            The events described above have common structure:\\
+            (type;channel) (note number) (velocity)
+            $$note\ number = 69 + 12\log_2 \frac{f}{440}\ where\ f\ is\ the\ frequency$$
         \end{frame}
     \section{Markov chains}
         \begin{frame}
@@ -204,7 +212,7 @@
             \end{frame}
             \subsection{Results}
             \begin{frame}
-                \frametitle{Reults}
+                \frametitle{Results}
                 \includegraphics[scale=0.3]{notes}
             \end{frame}
             \begin{frame}

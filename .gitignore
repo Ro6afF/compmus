@@ -13,3 +13,5 @@ demo
 *.fdb_latexmk
 *.bbl
 *.blg
+*.snm
+*.nav
