@@ -52,7 +52,7 @@
 
     \section{Introduction}
         \subsection {Frequency relations (tuning)}
-        \paragraph{} The sound is a type of mechanical vibration (waves) so it has the parameters of all the normal mechanical waves. However in the field of music we are most interested in the frequency of the wave, because it makes the variety of tones we hear. But not every sequence of frequencies sounds pleasant to the human. So the people developed some algorithms to ``syncronize'' the sequence of tunes. Here are the most used of them:
+        \paragraph{} The sound is a type of mechanical vibration (waves) so it has the parameters of a normal mechanical wave. However, in the field of music we are most interested in the frequency of the wave, because it makes the variety of tones we hear. But not every sequence of frequencies sounds pleasant to the human. So people developed some algorithms to ``syncronize'' the sequence of tunes. Here are the most used of them:
 
             \subsubsection {Pythagorean tuning} 
             \paragraph{} The Pythagorean tuning\cite{pythtun} is the base of almost all tuning systems. It is based on the Pythagorean fractions.\\
@@ -61,7 +61,7 @@
                     \caption{Pythagorean fractions}
                 \end{figure}\paragraph{}
                 It is assumed that if the frequencies correlate like these numbers, we hear them in harmony and the music will sound pleasant (if we select appropriate sequence of these tones of course).\paragraph{}
-                If we pick a string with given length we know that the frequency of the produced sound depends on the length of the string. So to pick the ``perfect'' fraction we have to divide it like the Pythagorean fractions.
+                If we pick a string with given length we know that the frequency of the produced sound depends on the length of the string. So to pick the ``perfect'' fraction, we have to divide it like the Pythagorean fractions.
                 \begin{figure}[h]
                     \begin{center}
                         \begin{tikzpicture}
@@ -88,7 +88,7 @@
             \subsubsection{Equal temperament}
             \paragraph{}Equal temperament is a tuning scale developed by Vincenzo Galilei. His idea is that the frequency ratio between each pair of adjacent notes is the same. In equal temperament tunings, the generating interval is often found by dividing some larger desired interval into a number of smaller equal steps (equal frequency ratios between neighbouring notes). The tones are divided in groups called octaves. The ratio between the frequencies of last and the first tone of the octave is two.
                 $$\frac{last\ tune}{first\ tune} = \frac{2}{1}$$ \paragraph{}
-                In the Western music, the most commonly used tuning system since the 18th century has been the twelve-tone equal temperament(or 12-TET)\cite{12tet}. The 12-TET devides the octave in 12 eqal parts, all of them equal on logarithmic scale, with ratio $\sqrt[12]{2} = 2^\frac{1}{12} \approx 1.05946$. In modern times 12-TET is usually tunned relatively to the standard frequency of 440 Hz, called A4, meaning that the note A is tuned to 440 Hz and all other note are derived by the logarithmic scale described above. \paragraph{}
+                In Western music, the most commonly used tuning system since the 18th century has been the twelve-tone equal temperament (or 12-TET)\cite{12tet}. The 12-TET divides the octave in 12 eqal parts, all of them equal on logarithmic scale, with ratio $\sqrt[12]{2} = 2^\frac{1}{12} \approx 1.05946$. In modern times 12-TET is usually tunned relatively to the standard frequency of 440 Hz, called A4, meaning that the note A is tuned to 440 Hz and all other notes are derived by the logarithmic scale described above. \paragraph{}
                 Equal temperament is an approximation of the Pythagorean scale, which is more convenient for use.\\
                 \begin{figure}[h]
                     \begin{center}
@@ -109,38 +109,38 @@
                             Major seventh ($B$) & $2^\frac{11}{12} \approx 1.88774$ & $\frac{15}{8} = 1.875$* \\ \hline
                             Octave ($C$) & $2^\frac{12}{12} = 2$ & $\frac{2}{1} = 2$ \\ \hline
                             \multicolumn{3}{c}{Note: the values with * can't be represented like Pythagorean fractions with}\\
-                            \multicolumn{3}{c}{decent accuracy but the human ear can't differentiate this (in the most cases)}\\
+                            \multicolumn{3}{c}{decent accuracy but the human ear can't differentiate this (in most cases)}\\
                         \end{tabular}
                         \caption{Values of the tones in 12-TET and Pythagorean scale}
                     \end{center}
                 \end{figure}
         \subsection {MIDI standart}
-        \paragraph{} The purpose of MIDI\cite{midi} is to define a way compact representation of musical sheets, which makes it appropriate for disk storage.\paragraph{}
-            The standard MIDI(SMID) file is divided into chunks. Each chunk has a type and length represented as ASCII and 32 bit number respectively. There are two types of chunks: ``MThd''(e.g. Header chunk) and ``MTrk''(e.g. Track chunk). There is always one header while there can be more than one track.
+        \paragraph{} The purpose of MIDI\cite{midi} is to define a compact representation of musical sheets, which makes it appropriate for disk storage.\paragraph{}
+            The standard MIDI (SMID) file is divided into chunks. Each chunk has a type and length represented as ASCII and 32 bit number respectively. There are two types of chunks: ``MThd''(e.g. Header chunk) and ``MTrk''(e.g. Track chunk). There is always one header while there can be more than one tracks.
             \subsubsection{Header chunk}
-            \paragraph{}The header chunk contains data for the whole file. It has fixed length of 6 bytes. The first 2 bytes represent the format of file:
+            \paragraph{}The header chunk contains data for the whole file. It has fixed length of 6 bytes. The first 2 bytes represent the format of the file:
                 \begin{itemize}
                     \item 0 $\to$ One track
                     \item 1 $\to$ Multiple tracks but one song
-                    \item 2 $\to$ Multiple song
+                    \item 2 $\to$ Multiple songs
                 \end{itemize}
                 The second 2 bytes represent the number of tracks. For format 0 it is always 1. And the last two bytes represent how many ticks are in a quarter note.
             \subsubsection{Track chunks}
-            \paragraph{}Each track is composed of events. Each event has delta time - the time (in ticks) which passes after the previous event before executing this event. There are two types of events: MIDI events - the ones which represent the actual music and META - these which supply additional info like titles, lyrics, etc.
-            \paragraph{}Here are listed the most important events(however they are useless without the others):
+            \paragraph{}Each track is composed of events. Each event has delta time -- the time (in ticks) which passes after the previous event before executing this event. There are two types of events: MIDI events -- the ones which represent the actual music, and META -- these which supply additional info like titles, lyrics, etc.
+            \paragraph{}Here are listed the most important events (however, they are useless without the others):
             \begin{itemize}
-                \item NOTEON - this event initiates playing with given pitch (frequency) and velocity. The MIDI representation of this event is:\\
+                \item NOTEON -- this event initiates playing with given pitch (frequency) and velocity. The MIDI representation of this event is:\\
                     \textit{``1001nnnn 0kkkkkkk 0vvvvvvv''} where nnnn is the binary representation of the channel, kkkkkkk - the pitch and vvvvvvv - the velocity
-                \item NOTEOFF - this event stops playing with given pitch (frequency). And the intensity of the stop. The MIDI representation of this event is:\\
+                \item NOTEOFF - this event stops playing the note with given pitch (frequency) and the intensity of the stop. The MIDI representation of this event is:\\
                     \textit{``1000nnnn 0kkkkkkk 0vvvvvvv''} where nnnn is the binary representation of the channel, kkkkkkk - the pitch and vvvvvvv - the velocity
             \end{itemize}
-            \paragraph{} Each MIDI event that has to play note uses this standard for encoding the frequency of the played tune\cite{midifreq}:
+            \paragraph{} Each MIDI event that has to play a note uses this standard for encoding the frequency of the played tune\cite{midifreq}:
             $$f = 440 * 2^\frac{d - 69}{12}\ where\ d\ is\ the\ note\ number\ and\ f\ is\ the\ frequency$$
             Therefore the note number is:
             $$d = 69 + 12\log_2 \frac{f}{440}$$
         \subsection{Markov chains}
         \paragraph{}Markov chain\cite{markov} is a stochastic model which describes a sequence of events in which the probability of each event depends entirely on the previous event (in some cases the previous $n$ but the table which describes the chain size becomes big quickly because it equals to $k^n\ where\ k\ is\ the\ number\ of\ events$).\paragraph{}
-                Markov chains are represented as table in the most cases. Each cell of the table hold the probability of triggering an event from the row/column after the event in the column/row respectively (see Figure \ref{fig:markov}).
+                Markov chains are represented as a table in the most cases. Each cell of the table contains the probability of triggering an event from the row/column after the event in the column/row respectively (see Figure \ref{fig:markov}).
                 \begin{figure}[h]
                     \begin{center}
                         \begin{subfigure}[a]{0.4\textwidth}
@@ -175,7 +175,7 @@
                 \end{figure}
                 \newpage
                 \subsection{Used algorithms}
-                \paragraph{}Each algorithm is based on analytics with Markov chains. Their common block diagram is represented in Figure \ref{fig:diag}.
+                \paragraph{}Each algorithm is based on analysis with Markov chains. Their common block diagram is represented in Figure \ref{fig:diag}.
             \begin{figure}[h]
                 \begin{center}
                     \begin{tikzpicture}[thick,scale=0.7, every node/.style={scale=0.7}, node distance=1.5cm]
@@ -203,13 +203,13 @@
             \subsubsection{Algorithm with one tune pitch}
             \paragraph{}This algorithm constructs a Markov table based only on the frequencies of the tones. The size of the table depends on the variety of tunes used. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.
             \subsubsection{Algorithm with one tune pitch and note duration}
-            \paragraph{}This algorithm constructs a Markov table based on the frequencies of the tones and their length. Because of this the size of the table increases and the size depends ont only on the variety of notes but on the variety of note lengths. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.
+            \paragraph{}This algorithm constructs a Markov table based on the frequencies of the tones and their length. Because of this, the size of the table increases and depends not only on the variety of notes but on the variety of note lengths as well. Then it selects a starting note and each next note is picked using random number generator and the chances in the Markov chain.
             \subsubsection{Algorithm with two tune pitch}
-            \paragraph{}This algorithm constructs a Markov table based only on the frequencies of the tones but it calculates the chance of next event, based ont he previous two, so the size of the table increases and is the size of the table in 1.4.1 sqared. Then it selects starting note and each next note is picked using random number generator and the chances in the Markov chain.
+            \paragraph{}This algorithm constructs a Markov table based only on the frequencies of the tones but it calculates the chance of next event, based on the previous two, so the size of the table increases and is the size of the table in 1.4.1 squared. Then it selects a starting note and each next note is picked using random number generator and the chances in the Markov chain.
             \subsubsection{Rust}
-            \paragraph{}All the implementations of the algorithms for the project are written in Rust programming language\cite{rust}. It is based on C but it guarantees memory safety, threads without data races, generics(templates) and the standard library is bigger and has some bindings for functional programming.
+            \paragraph{}All the implementations of the algorithms for the project are written in Rust programming language\cite{rust}. It is based on C but guarantees memory safety, threads without data races, generics (templates) and the standard library is bigger and has some bindings for functional programming.
     \section{Results}
-        \paragraph{}Here are given some example results from tests. The tests are runed with original music ``Noctune op. 9 no. 2'' written by Chopin (the note notation is given in Figure \ref{fig:original}):
+        \paragraph{}Here are given some example results from tests. The tests are run with original music ``Noctune op. 9 no. 2'' written by Chopin (the note notation is given in Figure \ref{fig:original}):
         \begin{itemize}
             \item Below is shown the output of the algorithm that constructs the Markov chain with one note before an event without using the length.\\
             \includegraphics[scale=0.6]{result_one_note}
@@ -218,24 +218,24 @@
             \item Below is shown the output of the algorithm that constructs the Markov chain with two notes before an event without using the length.\\
             \includegraphics[scale=0.6]{result_pair_notes}
         \end{itemize} 
-        All the sheets are given in the \href{https://github.com/Ro6afF/compmus/tree/master/doc}{github repo} of the project like MIDI files if you are interested in hearing what they sound like.
+        All the sheets are given in the \href{https://github.com/Ro6afF/compmus/tree/master/doc}{github repo} of the project like MIDI files if the reader is interested in hearing how they sound like.
         \begin{figure}[h!]
             \includegraphics[scale=0.7]{original}
             \caption{Noctune op. 9 no. 2 by Chopin}
             \label{fig:original}
         \end{figure}
         \newpage
-    \section{Future}
-        \paragraph{}The future of the project aims developing more algorithms for composing music and statistical models. Here are listed the planned improvements:
+    \section{Future development}
+        \paragraph{}The future of the project is aimed at developing more algorithms for composing music and statistical models. Here are listed the planned improvements:
         \begin{enumerate}
-            \item Parallelize the algorithms to improve the speed of the construction of the table because on large amount of notes the algorithm that use the length of the notes is too slow
-            \item Implement the algorithm that uses a pair of notes and their lengths to predict the next one
-            \item Use Markov chains to check the similarity of two musical pieces
-            \item Use neural networks to generate music
-            \item Implement other algorithms
+            \item Parallelize the algorithms to improve the speed of the construction of the table because on large amount of notes the algorithm that uses the length of the notes is too slow;
+            \item Implement the algorithm that uses a pair of notes and their lengths to predict the next one;
+            \item Use Markov chains to check the similarity of two musical pieces;
+            \item Use neural networks to generate music;
+            \item Implement other algorithms.
         \end{enumerate}
     \section{Code}
-        All the following link lead to certain branches or commits of the \href{https://github.com}{GitHub} repository of the project:
+        All the following links lead to certain branches or commits of the \href{https://github.com}{GitHub} repository of the project:
         \begin{itemize}
             \item \href{https://github.com/Ro6afF/compmus/tree/0cf9173a547a9effdc720dc6f6ac8ad551cd2fa4}{Implelentation of the algorithm that constructs the table using one note for next note prediction}
             \item \href{https://github.com/Ro6afF/compmus/tree/One_note_with_time}{Implelentation of the algorithm that constructs the table using one note and its length for next note prediction}
@@ -245,11 +245,11 @@
     {\large{\textbf{Aknowledgements}}}
     \begin{itemize}
         \item Emil Kelevedjiev - for explaining the theory of Markov chains and introduction to the music programming
-        \item Zornitsa Dzhenkova - evaluating the results of the algorithms and supposing fixes for the problems
+        \item Zornitsa Dzhenkova - evaluating the results of the algorithms and suggesting fixes for the bugs
         \item HSSIMI - for the opportunity to participate in SRS '18
         \item Zvezdin Besarabov - help with the structure of the paper
+        \item Pressiana Marinova - 6toto sa pi4ui and for proofread
         \item Ivaylo Zhelev - 6toto sa pi4ui
-        \item Pressiana Marinova - 6toto sa pi4ui
         \item Georgi Gachev - 6toto sa pi4ui
     \bibliography{info}{}
     \bibliographystyle{plain}
